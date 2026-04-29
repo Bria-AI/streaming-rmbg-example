@@ -6,7 +6,11 @@ Small page that connects over **WebSocket**, sends video as JPEG frames, receive
 
 ## Run
 
-Open `index.html`, paste your **API token**, choose a **local video**, click **Start**.
+```bash
+npx serve .
+```
+
+Paste **API token**, choose a **video**, **Start**.
 
 ## WebSocket usage
 
