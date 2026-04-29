@@ -12,7 +12,7 @@ Open `index.html`, paste your **API token**, choose a **local video**, click **S
 
 Integration flow:
 
-1. **Open a WebSocket** with the API token in the query string (default host: `DEFAULT_WS_URL` in `constants.js`):
+1. **Open a WebSocket** with the API token in the query string.
 
    ```text
    wss://streaming.prod.bria-api.com?api_token=<YOUR_API_TOKEN>

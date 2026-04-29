@@ -35,7 +35,6 @@ function remountProcessedCanvas(width, height) {
   return next;
 }
 
-const serverUrlInput = document.getElementById("server-url");
 const authTokenInput = document.getElementById("auth-token");
 const fileInput = document.getElementById("file-input");
 const fileBtnLabel = document.getElementById("file-btn-label");
@@ -231,7 +230,6 @@ function handleWsClose(ev) {
 startBtn.addEventListener("click", async () => {
   hideError();
   const token = authTokenInput.value.trim();
-  const serverUrl = serverUrlInput.value.trim() || DEFAULT_WS_URL;
   if (!token) {
     showError("API token is required.");
     return;
@@ -250,7 +248,7 @@ startBtn.addEventListener("click", async () => {
 
   let url;
   try {
-    url = buildStreamingWsUrl(serverUrl, token);
+    url = buildStreamingWsUrl(DEFAULT_WS_URL, token);
   } catch (e) {
     showError(e instanceof Error ? e.message : "Invalid configuration.");
     return;
@@ -340,5 +338,3 @@ stopBtn.addEventListener("click", () => {
   wsClient = null;
   resetSessionUi();
 });
-
-serverUrlInput.value = DEFAULT_WS_URL;
