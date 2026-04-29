@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Streaming RMBG — Example</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0f0f12;
+      color: #e2e2e8;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 24px;
+      gap: 24px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: #fff;
+    }
+    h1 span { color: #7c6aff; }
+
+    .card {
+      background: #18181f;
+      border: 1px solid #2a2a38;
+      border-radius: 12px;
+      padding: 20px 24px;
+      width: 100%;
+      max-width: 980px;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr auto;
+      gap: 12px;
+      align-items: flex-end;
+    }
+
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 0.78rem;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    select {
+      background: #0f0f12;
+      border: 1px solid #2a2a38;
+      border-radius: 8px;
+      padding: 9px 12px;
+      color: #e2e2e8;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.15s;
+      width: 100%;
+    }
+    input:focus, select:focus { border-color: #7c6aff; }
+    select { cursor: pointer; }
+    option { background: #18181f; }
+
+    .file-label span {
+      font-size: 0.78rem;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .file-btn {
+      background: #0f0f12;
+      border: 1px dashed #2a2a38;
+      border-radius: 8px;
+      padding: 9px 12px;
+      color: #888;
+      font-size: 0.9rem;
+      cursor: pointer;
+      text-align: center;
+      transition: border-color 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+    .file-btn:hover { border-color: #7c6aff; color: #a89fff; }
+
+    .btn {
+      border: none;
+      border-radius: 8px;
+      padding: 9px 22px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      white-space: nowrap;
+      height: 38px;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.35; cursor: not-allowed; pointer-events: none; }
+    .btn-start { background: #7c6aff; color: #fff; }
+    .btn-start:hover { background: #9a8bff; }
+    .btn-stop  { background: #ff5c5c; color: #fff; }
+    .btn-stop:hover  { background: #ff7a7a; }
+
+    .mute-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-bottom: 2px;
+    }
+    .mute-row label {
+      flex-direction: row;
+      align-items: center;
+      text-transform: none;
+      letter-spacing: 0;
+      font-size: 0.78rem;
+      color: #666;
+      cursor: pointer;
+      user-select: none;
+    }
+    .mute-row input { accent-color: #7c6aff; width: 14px; height: 14px; }
+
+    .canvases {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .canvas-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .canvas-label {
+      font-size: 0.78rem;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .canvas-box {
+      position: relative;
+      background: #0f0f12;
+      border: 1px solid #2a2a38;
+      border-radius: 10px;
+      overflow: hidden;
+      aspect-ratio: 16 / 9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .canvas-box canvas {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+    #processed-wrap {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .canvas-box.proc {
+      background: repeating-conic-gradient(#1c1c26 0% 25%, #141420 0% 50%) 0 0 / 20px 20px;
+    }
+    .canvas-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #3a3a50;
+      font-size: 0.85rem;
+      pointer-events: none;
+    }
+
+    .stats-bar {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .stat {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .stat-label {
+      font-size: 0.72rem;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .stat-value {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #a89fff;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #2a2a38;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+    .status-dot.active {
+      background: #4ade80;
+      box-shadow: 0 0 6px #4ade8099;
+      animation: pulse 1.4s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.4; }
+    }
+
+    .error-banner {
+      background: #2a1818;
+      border: 1px solid #5c3030;
+      color: #ffb4b4;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 0.9rem;
+      width: 100%;
+      max-width: 980px;
+    }
+    .error-banner[hidden] { display: none !important; }
+
+    @media (max-width: 640px) {
+      .controls { grid-template-columns: 1fr 1fr; }
+      .canvases  { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Video background removal &nbsp;<span>/ example</span></h1>
+
+  <div id="error-banner" class="error-banner" hidden>
+    <span id="error-text"></span>
+  </div>
+
+  <div class="card">
+    <div class="controls">
+      <label>
+        Server URL
+        <input type="text" id="server-url" placeholder="wss://…" autocomplete="off" />
+      </label>
+
+      <label>
+        API token
+        <input type="password" id="auth-token" placeholder="your-api-token" autocomplete="off" />
+      </label>
+
+      <div class="file-label">
+        <span>Video file</span>
+        <input type="file" id="file-input" accept="video/*" hidden />
+        <label for="file-input" class="file-btn" id="file-btn-label">Choose video…</label>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start;">
+        <div class="mute-row">
+          <label title="Mute preview audio (local playback only)">
+            <input type="checkbox" id="mute-checkbox" checked />
+            Mute
+          </label>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button type="button" class="btn btn-start" id="start-btn" disabled>▶ Start</button>
+          <button type="button" class="btn btn-stop" id="stop-btn" disabled>■ Stop</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="canvases">
+      <div class="canvas-wrap">
+        <span class="canvas-label">Original</span>
+        <div class="canvas-box">
+          <canvas id="original-canvas"></canvas>
+          <div class="canvas-placeholder" id="orig-placeholder">No video loaded</div>
+        </div>
+      </div>
+      <div class="canvas-wrap">
+        <span class="canvas-label">Background removed</span>
+        <div class="canvas-box proc">
+          <div id="processed-wrap">
+            <canvas id="processed-canvas" width="640" height="360"></canvas>
+          </div>
+          <div class="canvas-placeholder" id="proc-placeholder">Waiting for stream…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="stats-bar">
+      <div class="stat">
+        <span class="stat-label">Status</span>
+        <span class="stat-value" style="font-size:0.9rem;display:flex;align-items:center;">
+          <span class="status-dot" id="status-dot"></span>
+          <span id="status-text">Idle</span>
+        </span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Throughput</span>
+        <span class="stat-value" id="stat-fps">—</span>
+      </div>
+    </div>
+  </div>
+
+  <video id="video" playsinline style="display:none"></video>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
