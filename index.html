@@ -77,6 +77,8 @@
       letter-spacing: 0.06em;
     }
     .file-btn {
+      position: relative;
+      display: block;
       background: #0f0f12;
       border: 1px dashed #2a2a38;
       border-radius: 8px;
@@ -89,6 +91,17 @@
       white-space: nowrap;
     }
     .file-btn:hover { border-color: #7c6aff; color: #a89fff; }
+    .file-input-overlay {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      opacity: 0;
+      cursor: pointer;
+      font-size: 16px;
+      z-index: 2;
+    }
 
     .btn {
       border: none;
@@ -264,8 +277,10 @@
 
       <div class="file-label">
         <span>Video file</span>
-        <input type="file" id="file-input" accept="video/*" hidden />
-        <label for="file-input" class="file-btn" id="file-btn-label">Choose video…</label>
+        <label class="file-btn">
+          <input type="file" id="file-input" class="file-input-overlay" accept="video/*" />
+          <span id="file-btn-label">Choose video…</span>
+        </label>
       </div>
 
       <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start;">
