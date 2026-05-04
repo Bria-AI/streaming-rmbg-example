@@ -1,8 +1,7 @@
-/** JPEG encode on a dedicated worker so it does not block the compositor. */
+let offscreen;
+let offCtx;
 
-let offscreen = null;
-let offCtx = null;
-
+/** Creates or resizes the scratch canvas used before JPEG export. */
 function ensureCanvas(w, h) {
   if (!offscreen || offscreen.width !== w || offscreen.height !== h) {
     offscreen = new OffscreenCanvas(w, h);
@@ -10,6 +9,7 @@ function ensureCanvas(w, h) {
   }
 }
 
+/** Draws a frame bitmap to JPEG and replies with `{ type: "encoded", id, buffer }`. */
 self.onmessage = async ({ data }) => {
   const { id, bitmap, width, height, quality } = data;
   ensureCanvas(width, height);

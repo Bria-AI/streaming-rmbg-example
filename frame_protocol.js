@@ -1,6 +1,6 @@
 import { APP_REMOVE_BG, CODEC_JPEG, HEADER_SIZE, MEDIA_TYPE_VIDEO, PROTOCOL_VERSION } from "./constants.js";
 
-/** 24-byte BRIA header + JPEG body (outbound video). */
+/** Builds the 24-byte BRIA header plus your JPEG for one outbound video frame. */
 export function packVideoJpegFrame(frameId, presentationTimestampUs, jpegPayload) {
   const payloadBuffer =
     jpegPayload instanceof ArrayBuffer
@@ -26,17 +26,17 @@ export function packVideoJpegFrame(frameId, presentationTimestampUs, jpegPayload
   return out.buffer;
 }
 
+/** Reads frame id, media type, and payload from one inbound binary message. */
 export function unpackBinaryFrame(buffer) {
   if (buffer.byteLength < HEADER_SIZE) return null;
   const bytes = new Uint8Array(buffer, 0, 4);
-  if (bytes[0] !== 0x42 || bytes[1] !== 0x52 || bytes[2] !== 0x49 || bytes[3] !== 0x41) {
-    return null;
-  }
+  if (bytes[0] !== 0x42 || bytes[1] !== 0x52 || bytes[2] !== 0x49 || bytes[3] !== 0x41) return null;
   const view = new DataView(buffer);
-  const mediaType = view.getUint8(6);
   const hi = view.getUint32(8, false);
   const lo = view.getUint32(12, false);
-  const frameId = hi * 0x100000000 + lo;
-  const payload = buffer.slice(HEADER_SIZE);
-  return { frameId, mediaType, payload };
+  return {
+    frameId: hi * 0x100000000 + lo,
+    mediaType: view.getUint8(6),
+    payload: buffer.slice(HEADER_SIZE),
+  };
 }

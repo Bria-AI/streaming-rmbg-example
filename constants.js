@@ -1,4 +1,8 @@
-/** Protocol bytes, congestion tuning, and UI policy for WebSocket close events. */
+/**
+ * Streaming URL, frame header bytes, JPEG/AIMD tuning, compositor queue cap,
+ * and WebSocket close codes where the sample shows `CloseEvent.reason`.
+ */
+
 export const DEFAULT_WS_URL = "wss://streaming.prod.bria-api.com";
 
 export const HEADER_SIZE = 24;
@@ -18,6 +22,6 @@ export const AIMD_STALE_FRAME_PURGE_INTERVAL_MS = 5000;
 
 export const JPEG_QUALITY = 0.6;
 export const MAX_ENCODE_PENDING = 4;
+export const MAX_COMPOSITOR_POST_QUEUE = 10;
 
-/** Policy close codes (see product API doc): show `CloseEvent.reason` in the UI when applicable. */
 export const USER_VISIBLE_CLOSE_CODES = new Set([1008, 1013, 4003, 4008]);
